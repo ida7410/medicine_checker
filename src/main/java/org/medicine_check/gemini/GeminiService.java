@@ -31,25 +31,31 @@ public class GeminiService {
     }
 
     public String askGemini(String prompt) {
-        // request body
-        Map<String, Object> requestBody = Map.of(
-                "contents", new Object[] {
-                        Map.of("parts", new Object[] {
-                                Map.of("text", geminiSystemInstruction + "\n\n" + prompt)
-                        })
-            }
-        );
+        try {
+            // request body
+            Map<String, Object> requestBody = Map.of(
+                    "contents", new Object[] {
+                            Map.of("parts", new Object[] {
+                                    Map.of("text", geminiSystemInstruction + "\n\n" + prompt)
+                            })
+                }
+            );
 
-        // api call
-        String response = webClient.post()
-                .uri(geminiApiUrl + geminiApiKey)
-                .header("Content-Type", "application/json")
-                .bodyValue(requestBody)
-                .retrieve()
-                .bodyToMono(String.class)
-                .block();
+            // api call
+            String response = webClient.post()
+                    .uri(geminiApiUrl)
+                    .header("Content-Type", "application/json")
+                    .header("X-goog-api-key", geminiApiKey)
+                    .bodyValue(requestBody)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block();
 
-        return response;
+            return response;
+        } catch (Exception e) {
+            e.printStackTrace(); // This will show the actual root cause
+            throw new RuntimeException("GeminiService error: " + e.getMessage(), e);
+        }
     }
 
 }

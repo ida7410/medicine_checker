@@ -13,12 +13,92 @@
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <!-- my stylesheet -->
     <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        #chat-box {
+            height: 500px;
+            overflow-y: auto;
+            padding: 1rem;
+            border: 1px solid #dee2e6;
+            background-color: #f8f9fa;
+            border-radius: 0.5rem;
+        }
+        .message {
+            margin-bottom: 1rem;
+        }
+        .user-msg {
+            text-align: right;
+        }
+        .user-msg .card {
+            background-color: #d0ebff;
+        }
+        .bot-msg .card {
+            background-color: #e6f4ea;
+        }
+        .card {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 1rem;
+            max-width: 80%;
+        }
+    </style>
 </head>
+<body class="bg-light">
 
-<body>
+<div class="container py-5">
+    <h2 class="mb-4 text-center">💬 Gemini Chat Assistant</h2>
+
+    <div id="chat-box" class="mb-3"></div>
+
+    <form id="chat-form" class="d-flex gap-2">
+        <input type="text" id="question" class="form-control" placeholder="Ask something..." required>
+        <button type="submit" class="btn btn-primary">Send</button>
+    </form>
+</div>
 
 <script>
+    $(document).ready(function () {
+        $('#chat-form').submit(function (e) {
+            e.preventDefault();
+            const question = $('#question').val();
+            $('#question').val('');
+            console.log(question)
 
+            $('#chat-box').append(`
+                <div class="message user-msg">
+                    <div class="card text-end">
+                        <strong>You:</strong> ${question}
+                    </div>
+                </div>
+            `);
+
+            $.ajax({
+                url: '/gemini/generate',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ question: question }),
+                success: function (response) {
+                    $('#chat-box').append(`
+                        <div class="message bot-msg">
+                            <div class="card">
+                                <strong>Gemini:</strong> ${response}
+                            </div>
+                        </div>
+                    `);
+                    $('#chat-box').scrollTop($('#chat-box')[0].scrollHeight);
+                },
+                error: function () {
+                    $('#chat-box').append(`
+                        <div class="message bot-msg">
+                            <div class="card bg-danger text-white">
+                                <strong>Error:</strong> Could not get a response from Gemini.
+                            </div>
+                        </div>
+                    `);
+                }
+            });
+        });
+    });
 </script>
+
 </body>
 </html>

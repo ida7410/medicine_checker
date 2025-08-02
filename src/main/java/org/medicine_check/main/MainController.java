@@ -10,7 +10,7 @@ public class MainController {
     @GetMapping("/")
     public String main(Model model) {
         model.addAttribute("message", "Welcome to the Medicine Check");
-        return "temp";
+        return "chat";
     }
 
 }
