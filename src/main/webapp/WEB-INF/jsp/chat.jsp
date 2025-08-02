@@ -63,13 +63,8 @@
             $('#question').val('');
             console.log(question)
 
-            $('#chat-box').append(`
-                <div class="message user-msg">
-                    <div class="card text-end">
-                        <strong>You:</strong> ${question}
-                    </div>
-                </div>
-            `);
+            $('#chat-box').append('<div class="message user-msg"><div class="card text-end"><strong>You:</strong>'
+                + question + '</div></div>');
 
             $.ajax({
                 url: '/gemini/generate',
@@ -77,23 +72,13 @@
                 contentType: 'application/json',
                 data: JSON.stringify({ question: question }),
                 success: function (response) {
-                    $('#chat-box').append(`
-                        <div class="message bot-msg">
-                            <div class="card">
-                                <strong>Gemini:</strong> ${response}
-                            </div>
-                        </div>
-                    `);
+                    $('#chat-box').append('<div class="message bot-msg"><div class="card"><strong>Gemini:</strong> ' +
+                        response + '</div></div>');
                     $('#chat-box').scrollTop($('#chat-box')[0].scrollHeight);
                 },
                 error: function () {
-                    $('#chat-box').append(`
-                        <div class="message bot-msg">
-                            <div class="card bg-danger text-white">
-                                <strong>Error:</strong> Could not get a response from Gemini.
-                            </div>
-                        </div>
-                    `);
+                    $('#chat-box').append('<div class="message bot-msg"><div class="card bg-danger text-white">' +
+                        '<strong>Error:</strong> Could not get a response from Gemini.</div></div>');
                 }
             });
         });
