@@ -1,6 +1,7 @@
 package org.medicine_check.gemini;
 
 import com.google.genai.Client;
+import com.google.genai.types.GenerateContentConfig;
 import com.google.genai.types.GenerateContentResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,7 +10,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -34,11 +37,15 @@ public class GeminiService {
         try {
             // request body
             Map<String, Object> requestBody = Map.of(
-                    "contents", new Object[] {
-                            Map.of("parts", new Object[] {
-                                    Map.of("text", geminiSystemInstruction + "\n\n" + prompt)
-                            })
-                }
+                "contents", List.of(
+                    Map.of("parts", List.of(
+                        Map.of("text", prompt)
+                    ))
+                ),
+                "generationConfig", Map.of(
+                    "stopSequences", List.of("Title"),
+                    "temperature", 0.2
+                )
             );
 
             // api call
