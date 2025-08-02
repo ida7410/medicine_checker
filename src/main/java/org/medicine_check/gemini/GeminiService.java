@@ -44,7 +44,8 @@ public class GeminiService {
                 ),
                 "generationConfig", Map.of(
                     "stopSequences", List.of("Title"),
-                    "temperature", 0.2
+                    "temperature", 0.2,
+                    "topP", 0.25
                 )
             );
 
