@@ -1,10 +1,19 @@
 package org.medicine_check.gemini;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.medicine_check.common.CookieManager;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -16,6 +25,9 @@ public class GeminiService {
 
     @Value("${gemini.api.key}")
     private String geminiApiKey;
+
+    @Autowired
+    private CookieManager cookieManager;
 
     @Value("${gemini.system-instruction}")
     private String geminiSystemInstruction;
@@ -63,6 +75,26 @@ public class GeminiService {
             e.printStackTrace(); // This will show the actual root cause
             throw new RuntimeException("GeminiService error: " + e.getMessage(), e);
         }
+    }
+
+    public List<String> setChatList(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            Map<String, String> chat
+    ) {
+
+        Cookie cookie = cookieManager.getCookieByName(request, "chatList");
+        List<String> chatList = cookie == null ? new ArrayList<>() : cookieManager.getCookieList(cookie);
+
+        chatList.add("{" + chat.get("role") + ":" + chat.get("content") + "}");
+
+        Cookie c = new Cookie("chatList", URLEncoder.encode(String.join(",", chatList)
+                , StandardCharsets.UTF_8));
+        c.setMaxAge(60);
+        c.setPath("/");
+        response.addCookie(c);
+
+        return chatList;
     }
 
 }

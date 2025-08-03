@@ -12,7 +12,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 @Component
-public class FileManageService {
+public class FileManager {
 
     @Value("${file.upload-path}")
     private String uploadPath;

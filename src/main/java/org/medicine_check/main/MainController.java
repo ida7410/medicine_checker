@@ -2,7 +2,7 @@ package org.medicine_check.main;
 
 import org.springframework.core.io.Resource;
 import jakarta.servlet.http.HttpSession;
-import org.medicine_check.common.FileManageService;
+import org.medicine_check.common.FileManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -18,7 +18,7 @@ import java.nio.file.Path;
 public class MainController {
 
     @Autowired
-    private FileManageService fileManageService;
+    private FileManager fileManageService;
 
     @GetMapping("/")
     public String main(
