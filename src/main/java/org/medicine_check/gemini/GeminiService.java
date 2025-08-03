@@ -37,6 +37,11 @@ public class GeminiService {
         try {
             // request body
             Map<String, Object> requestBody = Map.of(
+                "system_instruction", Map.of(
+                    "parts", List.of(
+                        Map.of("text", geminiSystemInstruction)
+                    )
+                ),
                 "contents", List.of(
                     Map.of("parts", List.of(
                         Map.of("text", prompt)
