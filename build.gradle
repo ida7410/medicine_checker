@@ -21,6 +21,7 @@ configurations {
 
 repositories {
     mavenCentral()
+    maven { url 'https://jfxtras.org/maven' } // required for some JFXtras artifacts
 }
 
 dependencies {
@@ -29,6 +30,8 @@ dependencies {
     implementation 'com.google.genai:google-genai:1.0.0'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
     implementation 'org.apache.tomcat.embed:tomcat-embed-jasper'
+    implementation 'org.jfxtras:jfxtras-controls:17-r1'
+    implementation 'org.jfxtras:jfxtras-icalendarfx:17-r1'
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     runtimeOnly 'com.mysql:mysql-connector-j'

@@ -1,9 +1,15 @@
 package org.medicine_check.gemini;
 
+import jakarta.servlet.http.HttpSession;
+import org.medicine_check.common.FileManageService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -13,11 +19,68 @@ public class GemeniRestController {
     @Autowired
     private GeminiService geminiService;
 
+    @Autowired
+    private FileManageService fileManageService;
+
     @PostMapping("/generate")
-    public ResponseEntity<String> generateCalendarFormat(@RequestBody Map<String,String> payload) {
-        String question = payload.get("question");
-        String answer = geminiService.askGemini(question);
-        return ResponseEntity.ok(answer);
+    public ResponseEntity<Map<String, Object>> generateCalendarFormat(
+            HttpSession session,
+            @RequestBody Map<String,String> payload) throws IOException, IOException {
+        try {
+            String question = payload.get("question");
+            String answer = geminiService.askGemini(question);
+            String icsStr = answer.substring(answer.indexOf("\\u003cics\\u003e") + 2, answer.indexOf("\\u003c/ics\\u003e\\")).replace("\\n", "\n");
+            Path filePath = fileManageService.saveIcsFile(session.getId(), "title", icsStr);
+            String downloadUrl = "http://localhost:8008/download/" + session.getId() + "/" + "title" + ".ics";
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("code", 200);
+            response.put("answer", answer);
+            response.put("downloadUrl", downloadUrl); // let frontend call this URL for file
+
+            return ResponseEntity.ok(response);
+        }
+        catch(Exception e) {
+            return  ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
 }
+//"""
+//{
+//  "candidates": [
+//    {
+//      "content": {
+//        "parts": [
+//          {
+//            "text": "Medicine name: Vitamin D\nTime to take: Every morning\nRepeated: Every day\nStarting date: Today\nEnding date: 2 weeks from today\n\n\u003ccsv\u003e\nSubject,Start Date,Start Time,End Date,End Time,Description,Location,Private\nVitamin D,2024-07-03,08:00:00,2024-07-17,08:00:00,Take Vitamin D every morning,,TRUE\n\u003c/csv\u003e\n\n\u003cics\u003e\nBEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Example Corp.//CalDAV Client//EN\nBEGIN:VEVENT\nUID:vitamin-d-20240703\nDTSTAMP:20240703T000000Z\nDTSTART:20240703T080000\nDTEND:20240703T080000\nSUMMARY:Vitamin D\nDESCRIPTION:Take Vitamin D every morning\nRRULE:FREQ=DAILY;UNTIL=20240717T070000Z\nEND:VEVENT\nEND:VCALENDAR\n\u003c/ics\u003e\n"
+//          }
+//        ],
+//        "role": "model"
+//      },
+//      "finishReason": "STOP",
+//      "avgLogprobs": -0.032120912725275216
+//    }
+//  ],
+//  "usageMetadata": {
+//    "promptTokenCount": 220,
+//    "candidatesTokenCount": 275,
+//    "totalTokenCount": 495,
+//    "promptTokensDetails": [
+//      {
+//        "modality": "TEXT",
+//        "tokenCount": 220
+//      }
+//    ],
+//    "candidatesTokensDetails": [
+//      {
+//        "modality": "TEXT",
+//        "tokenCount": 275
+//      }
+//    ]
+//  },
+//  "modelVersion": "gemini-2.0-flash",
+//  "responseId": "rI2OaNLuJcyFn9kPlovd-AI"
+//}
+//
+//"""
