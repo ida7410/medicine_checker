@@ -15,6 +15,7 @@ public class CookieManager {
     public Cookie getCookieByName(
             HttpServletRequest request,
             String cookieName) {
+
         Cookie[] cookies = request.getCookies();
         Cookie cookie = null;
         if (cookies != null) {
@@ -31,9 +32,9 @@ public class CookieManager {
         if (cookie == null) {
             return null;
         }
-        List<String> cookieList = new ArrayList<>();
+        // role:text, role:text, ...
         String cookieString = URLDecoder.decode(cookie.getValue());
-        cookieList = new ArrayList<>(Arrays.asList(cookieString.split(",")));
+        List<String> cookieList = new ArrayList<>(Arrays.asList(cookieString.split(",")));
         return cookieList;
     }
 
