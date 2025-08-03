@@ -1,15 +1,18 @@
 package org.medicine_check.common;
 
+import com.google.cloud.storage.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.TimeUnit;
 
 @Component
 public class FileManager {
@@ -17,58 +20,40 @@ public class FileManager {
     @Value("${file.upload-path}")
     private String uploadPath;
 
-    public Path saveIcsFile(String sessionId, String title, String icalData) throws IOException {
-        Path filePath = generatePath(sessionId, title, ".ics");
+    private final String BUCKET_NAME = "generated-ics";
+    private final Storage storage = StorageOptions.getDefaultInstance().getService();
 
-        // Write the iCal data into the file
-        Files.write(filePath, icalData.getBytes(StandardCharsets.UTF_8));
+    public URL saveIcsFile(String sessionId, String title, String icalData) throws IOException {
+        String objectName = sessionId + "/" + title + ".ics";
 
-        // Return the full path to the created file
-        return filePath;
+        BlobId blobId = BlobId.of(BUCKET_NAME, objectName);
+        BlobInfo blobInfo = BlobInfo.newBuilder(blobId)
+                .setContentType("text/calendar")
+                .build();
+
+        // Save the content as a blob in the bucket
+        storage.create(blobInfo, icalData.getBytes(StandardCharsets.UTF_8));
+
+        // Generate a signed URL that is valid for 15 minutes.
+        // This is a secure way to allow temporary downloads without
+        // making the file publicly accessible forever.
+        return storage.signUrl(blobInfo, 15, TimeUnit.MINUTES, Storage.SignUrlOption.withV4Signature());
     }
 
-    public Path saveCsvFile(String sessionId, String title, String icalData) throws IOException {
-        Path filePath = generatePath(sessionId, title, ".csv");
+    public URL getFileUrl(String sessionId, String title) {
+        String objectName = sessionId + "/" + title + ".ics";
 
-        // Write the iCal data into the file
-        Files.write(filePath, icalData.getBytes(StandardCharsets.UTF_8));
+        Blob blob = storage.get(BUCKET_NAME).get(BUCKET_NAME + objectName);
 
-        // Return the full path to the created file
-        return filePath;
+        if (blob == null || !blob.exists()) {
+            return null;
+        }
+
+        // This is the main change: We now need to build a BlobInfo object
+        // to pass to the signUrl method.
+        BlobInfo blobInfo = BlobInfo.newBuilder(blob.getBlobId()).build();
+
+        // Generate a signed URL for 15 minutes
+        return storage.signUrl(blobInfo, 15, TimeUnit.MINUTES, Storage.SignUrlOption.withV4Signature());
     }
-
-    public Path generatePath(String sessionId, String title, String extension) throws IOException {
-        // Create a unique subdirectory using the current timestamp
-        String directoryName = sessionId;
-
-        // Final directory path: uploadPath + / + timestamp
-        Path targetDir = Paths.get(uploadPath, directoryName);
-
-        // Create the directory if it doesn't exist
-        if (!Files.exists(targetDir)) {
-            Files.createDirectories(targetDir);
-        }
-
-        // file name (with .ics)
-        String safeTitle = title;
-        if (title.endsWith(".ics") && extension.equals(".ics")) {
-            safeTitle = title;
-        }
-        else if (title.endsWith(".csv") && extension.equals(".csv")) {
-            safeTitle = title;
-        }
-        else {
-            safeTitle = title + extension;
-        }
-
-        // full path: uploadPath/timestamp/title.ics
-        Path filePath = targetDir.resolve(safeTitle);
-
-        return filePath;
-    }
-
-    public Resource getIcsFile(Path filePath) throws IOException {
-        return new UrlResource(filePath.toUri());
-    }
-
 }

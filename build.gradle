@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.4.8'
     id 'io.spring.dependency-management' version '1.1.7'
+    id 'war'
 }
 
 group = 'org.medicine_check'
@@ -30,8 +31,11 @@ dependencies {
     implementation 'com.google.genai:google-genai:1.0.0'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
     implementation 'org.apache.tomcat.embed:tomcat-embed-jasper'
+    implementation 'jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl-api:2.0.0'
+    implementation 'org.glassfish.web:jakarta.servlet.jsp.jstl:2.0.0'
     implementation 'org.jfxtras:jfxtras-controls:17-r1'
     implementation 'org.jfxtras:jfxtras-icalendarfx:17-r1'
+    implementation 'com.google.cloud:google-cloud-storage:2.54.0'
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     runtimeOnly 'com.mysql:mysql-connector-j'
