@@ -27,16 +27,6 @@ public class FileManager {
         return filePath;
     }
 
-    public Path saveCsvFile(String sessionId, String title, String icalData) throws IOException {
-        Path filePath = generatePath(sessionId, title, ".csv");
-
-        // Write the iCal data into the file
-        Files.write(filePath, icalData.getBytes(StandardCharsets.UTF_8));
-
-        // Return the full path to the created file
-        return filePath;
-    }
-
     public Path generatePath(String sessionId, String title, String extension) throws IOException {
         // Create a unique subdirectory using the current timestamp
         String directoryName = sessionId;
