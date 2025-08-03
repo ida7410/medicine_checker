@@ -37,22 +37,22 @@ public class GemeniRestController {
             // 17 = len of \u003cics\u003e
             String icsStr = geminiResponse.substring(geminiResponse.indexOf("\\u003cics\\u003e") + 17, geminiResponse.indexOf("\\u003c/ics\\u003e")).replace("\\n", "\r\n");
             fileManageService.saveIcsFile(session.getId(), "title", icsStr);
-            Map<String, Object> data = getStringObjectMap(session.getId(), geminiResponse);
+
+            String baseUrl = request.getRequestURL().toString().replace(request.getRequestURI(), "");
+            Map<String, Object> data = getStringObjectMap(baseUrl, session.getId(), geminiResponse);
 
             geminiService.setChatList(request, response, Map.of("role", "user", "content", question));
             geminiService.setChatList(request, response, Map.of("role", "model", "content", question));
             return ResponseEntity.ok(data);
         }
         catch(Exception e) {
-            e.printStackTrace(); // show detailed error in logs
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("code", 500, "message", "Error generating ICS"));
+            return  ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
-    private static Map<String, Object> getStringObjectMap(String sessionId, String geminiResponse) {
+    private static Map<String, Object> getStringObjectMap(String baseUrl, String sessionId, String geminiResponse) {
         String answer = geminiResponse.substring(geminiResponse.indexOf("\"text\": \"") + 9, geminiResponse.indexOf("\\u003cics\\u003e")).replace("\\n", "<br>");
-        String downloadIcsUrl = "https://storage.googleapis.com/" + sessionId + "/" + "title" + ".ics";
+        String downloadIcsUrl = baseUrl + "/download/" + sessionId + "/" + "title" + ".ics";
 
         Map<String, Object> response = new HashMap<>();
         response.put("code", 200);
