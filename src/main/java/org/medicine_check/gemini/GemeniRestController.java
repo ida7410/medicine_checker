@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -31,7 +32,8 @@ public class GemeniRestController {
             @RequestBody Map<String,String> payload) throws IOException, IOException {
         try {
             String question = payload.get("question");
-            String geminiResponse = geminiService.askGemini(question);
+            List<String> previousChats = geminiService.getChatList(request);
+            String geminiResponse = geminiService.askGemini(question, previousChats);
             // 17 = len of \u003cics\u003e
             String icsStr = geminiResponse.substring(geminiResponse.indexOf("\\u003cics\\u003e") + 17, geminiResponse.indexOf("\\u003c/ics\\u003e")).replace("\\n", "\r\n");
             fileManageService.saveIcsFile(session.getId(), "title", icsStr);

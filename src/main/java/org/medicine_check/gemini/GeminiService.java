@@ -38,27 +38,39 @@ public class GeminiService {
         this.webClient = webClient.build();
     }
 
-    public String askGemini(String prompt) {
+    public String askGemini(String prompt, List<String> previousChats) {
         try {
             // request body
-            Map<String, Object> requestBody = Map.of(
-                "system_instruction", Map.of(
-                    "parts", List.of(
-                        Map.of("text", geminiSystemInstruction.replace("{today_date}"
-                                , LocalDateTime.now() + ""))
+            Map<String, Object> requestBody = new java.util.HashMap<>(Map.of(
+                    "system_instruction", Map.of(
+                            "parts", List.of(
+                                    Map.of("text", geminiSystemInstruction.replace("{today_date}"
+                                            , LocalDateTime.now() + ""))
+                            )
                     )
-                ),
-                "contents", List.of(
-                    Map.of("parts", List.of(
-                        Map.of("text", prompt)
-                    ))
-                ),
+            ));
+
+            // add previous chats to contents
+            Object[] contents = new Object[previousChats.size() + 1];
+            for (int i = 0; i < previousChats.size(); i++) {
+                String[] prevChat = previousChats.get(i).split(":");
+                contents[i] = Map.of(
+                    "role", prevChat[0],
+                    "parts", List.of(Map.of("text", prevChat[1])));
+            }
+            contents[previousChats.size()] = Map.of(
+                "role", "user",
+                "parts", List.of(Map.of("text", prompt)));
+            // put in the request body
+            requestBody.put("contents", contents);
+
+            // add configuration
+            requestBody.put(
                 "generationConfig", Map.of(
                     "stopSequences", List.of("Title"),
                     "temperature", 0.0,
                     "topP", 0.45
-                )
-            );
+            ));
 
             // api call
             String response = webClient.post()
@@ -77,24 +89,27 @@ public class GeminiService {
         }
     }
 
-    public List<String> setChatList(
+    public List<String> getChatList(HttpServletRequest request) {
+        Cookie cookie = cookieManager.getCookieByName(request, "chatList");
+        List<String> chatList = cookie == null ? new ArrayList<>() : cookieManager.getCookieList(cookie);
+        return  chatList;
+    }
+
+    public void setChatList(
             HttpServletRequest request,
             HttpServletResponse response,
             Map<String, String> chat
     ) {
 
-        Cookie cookie = cookieManager.getCookieByName(request, "chatList");
-        List<String> chatList = cookie == null ? new ArrayList<>() : cookieManager.getCookieList(cookie);
+        List<String> chatList = getChatList(request);
 
-        chatList.add("{" + chat.get("role") + ":" + chat.get("content") + "}");
+        chatList.add(chat.get("role") + ":" + chat.get("content"));
 
         Cookie c = new Cookie("chatList", URLEncoder.encode(String.join(",", chatList)
                 , StandardCharsets.UTF_8));
         c.setMaxAge(60);
         c.setPath("/");
         response.addCookie(c);
-
-        return chatList;
     }
 
 }
