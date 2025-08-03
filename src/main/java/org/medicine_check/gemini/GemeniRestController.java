@@ -1,7 +1,9 @@
 package org.medicine_check.gemini;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import org.medicine_check.common.FileManageService;
+import org.medicine_check.common.FileManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,21 +21,25 @@ public class GemeniRestController {
     private GeminiService geminiService;
 
     @Autowired
-    private FileManageService fileManageService;
+    private FileManager fileManageService;
 
     @PostMapping("/generate")
     public ResponseEntity<Map<String, Object>> generateCalendarFormat(
+            HttpServletRequest request,
+            HttpServletResponse response,
             HttpSession session,
             @RequestBody Map<String,String> payload) throws IOException, IOException {
         try {
             String question = payload.get("question");
             String geminiResponse = geminiService.askGemini(question);
-            // 15 = len of \u003cics\u003e & \u003ccsv\u003e
+            // 17 = len of \u003cics\u003e
             String icsStr = geminiResponse.substring(geminiResponse.indexOf("\\u003cics\\u003e") + 17, geminiResponse.indexOf("\\u003c/ics\\u003e")).replace("\\n", "\r\n");
             fileManageService.saveIcsFile(session.getId(), "title", icsStr);
-            Map<String, Object> response = getStringObjectMap(session.getId(), geminiResponse);
+            Map<String, Object> data = getStringObjectMap(session.getId(), geminiResponse);
 
-            return ResponseEntity.ok(response);
+            geminiService.setChatList(request, response, Map.of("role", "user", "content", question));
+            geminiService.setChatList(request, response, Map.of("role", "model", "content", question));
+            return ResponseEntity.ok(data);
         }
         catch(Exception e) {
             return  ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
