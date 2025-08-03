@@ -1,11 +1,9 @@
 package org.medicine_check.main;
 
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
 import jakarta.servlet.http.HttpSession;
 import org.medicine_check.common.FileManageService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -14,8 +12,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-
 import java.nio.file.Path;
 
 @Controller
@@ -32,14 +28,15 @@ public class MainController {
         return "chat";
     }
 
-    @GetMapping("/download/{dir}/{fileName}")
+    @GetMapping("/download/{dir}/{fileName}.{extension}")
     public ResponseEntity<Resource> download(
             Model model,
             @PathVariable String dir,
-            @PathVariable String fileName) {
+            @PathVariable String fileName,
+            @PathVariable String extension) {
 
         try {
-            Path path = fileManageService.generatePath(dir, fileName);
+            Path path = fileManageService.generatePath(dir, fileName, "." + extension);
             Resource resource = fileManageService.getIcsFile(path);
 
             if (resource == null) {
@@ -47,7 +44,7 @@ public class MainController {
             }
 
             return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + ".ics\"")
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "." + extension)
                     .contentType(MediaType.parseMediaType("text/calendar"))
                     .body(resource);
         }

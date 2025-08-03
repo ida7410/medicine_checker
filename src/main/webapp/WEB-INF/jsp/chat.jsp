@@ -79,8 +79,8 @@
                         '<div class="message bot-msg">' +
                             '<div class="card">' +
                             '<strong>Gemini: </strong> ' +
-                            '<p>' + JSON.parse(response["answer"])["candidates"][0]["content"]["parts"][0]["text"] + '<p>' +
-                            '<a href="' + response["downloadUrl"] + '" class="btn btn-outline-success btn-sm mt-2" download>📥 Download .ics File </a>' +
+                            '<p>' + response["answer"] + '<p>' +
+                            '<a href="' + response["downloadIcsUrl"] + '" class="btn btn-outline-success btn-sm mt-2" download>📥 Download .ics File </a>' +
                         '</div></div>');
                     $('#chat-box').scrollTop($('#chat-box')[0].scrollHeight);
                 },

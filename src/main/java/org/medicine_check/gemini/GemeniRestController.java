@@ -28,21 +28,28 @@ public class GemeniRestController {
             @RequestBody Map<String,String> payload) throws IOException, IOException {
         try {
             String question = payload.get("question");
-            String answer = geminiService.askGemini(question);
-            String icsStr = answer.substring(answer.indexOf("\\u003cics\\u003e") + 2, answer.indexOf("\\u003c/ics\\u003e\\")).replace("\\n", "\n");
-            Path filePath = fileManageService.saveIcsFile(session.getId(), "title", icsStr);
-            String downloadUrl = "http://localhost:8008/download/" + session.getId() + "/" + "title" + ".ics";
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("code", 200);
-            response.put("answer", answer);
-            response.put("downloadUrl", downloadUrl); // let frontend call this URL for file
+            String geminiResponse = geminiService.askGemini(question);
+            // 15 = len of \u003cics\u003e & \u003ccsv\u003e
+            String icsStr = geminiResponse.substring(geminiResponse.indexOf("\\u003cics\\u003e") + 17, geminiResponse.indexOf("\\u003c/ics\\u003e")).replace("\\n", "\r\n");
+            fileManageService.saveIcsFile(session.getId(), "title", icsStr);
+            Map<String, Object> response = getStringObjectMap(session.getId(), geminiResponse);
 
             return ResponseEntity.ok(response);
         }
         catch(Exception e) {
             return  ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
+    }
+
+    private static Map<String, Object> getStringObjectMap(String sessionId, String geminiResponse) {
+        String answer = geminiResponse.substring(geminiResponse.indexOf("\"text\": \"") + 9, geminiResponse.indexOf("\\u003cics\\u003e")).replace("\\n", "<br>");
+        String downloadIcsUrl = "http://localhost:8008/download/" + sessionId + "/" + "title" + ".ics";
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("code", 200);
+        response.put("answer", answer);
+        response.put("downloadIcsUrl", downloadIcsUrl); // let frontend call this URL for file
+        return response;
     }
 
 }

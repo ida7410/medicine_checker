@@ -19,7 +19,7 @@ public class FileManageService {
     private String uploadPath;
 
     public Path saveIcsFile(String sessionId, String title, String icalData) throws IOException {
-        Path filePath = generatePath(sessionId, title);
+        Path filePath = generatePath(sessionId, title, ".ics");
 
         // Write the iCal data into the file
         Files.write(filePath, icalData.getBytes(StandardCharsets.UTF_8));
@@ -28,7 +28,17 @@ public class FileManageService {
         return filePath;
     }
 
-    public Path generatePath(String sessionId, String title) throws IOException {
+    public Path saveCsvFile(String sessionId, String title, String icalData) throws IOException {
+        Path filePath = generatePath(sessionId, title, ".csv");
+
+        // Write the iCal data into the file
+        Files.write(filePath, icalData.getBytes(StandardCharsets.UTF_8));
+
+        // Return the full path to the created file
+        return filePath;
+    }
+
+    public Path generatePath(String sessionId, String title, String extension) throws IOException {
         // Create a unique subdirectory using the current timestamp
         String directoryName = sessionId;
 
@@ -41,7 +51,16 @@ public class FileManageService {
         }
 
         // file name (with .ics)
-        String safeTitle = title.endsWith(".ics") ? title : title + ".ics";
+        String safeTitle = title;
+        if (title.endsWith(".ics") && extension.equals(".ics")) {
+            safeTitle = title;
+        }
+        else if (title.endsWith(".csv") && extension.equals(".csv")) {
+            safeTitle = title;
+        }
+        else {
+            safeTitle = title + extension;
+        }
 
         // full path: uploadPath/timestamp/title.ics
         Path filePath = targetDir.resolve(safeTitle);

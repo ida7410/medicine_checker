@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -39,7 +40,8 @@ public class GeminiService {
             Map<String, Object> requestBody = Map.of(
                 "system_instruction", Map.of(
                     "parts", List.of(
-                        Map.of("text", geminiSystemInstruction)
+                        Map.of("text", geminiSystemInstruction.replace("{today_date}"
+                                , LocalDateTime.now() + ""))
                     )
                 ),
                 "contents", List.of(
@@ -49,8 +51,8 @@ public class GeminiService {
                 ),
                 "generationConfig", Map.of(
                     "stopSequences", List.of("Title"),
-                    "temperature", 0.2,
-                    "topP", 0.25
+                    "temperature", 0.0,
+                    "topP", 0.45
                 )
             );
 
