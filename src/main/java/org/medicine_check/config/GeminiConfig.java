@@ -1,4 +1,4 @@
-package org.medicine_check.gemini;
+package org.medicine_check.config;
 
 import com.google.genai.Client;
 import org.springframework.context.annotation.Configuration;
