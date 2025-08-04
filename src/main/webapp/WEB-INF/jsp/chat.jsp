@@ -1,5 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
          pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -21,8 +23,26 @@
 
 <div class="container py-5">
     <h2 class="mb-4 text-center">💬 Gemini Chat Assistant</h2>
-
-    <div id="chat-box" class="mb-3"></div>
+    <a href="/reset-chat-cookie">resetcookie</a>
+    <div id="chat-box" class="mb-3">
+    <c:forEach items="${chatsMapList}" var="chatMap">
+    <c:if test="${chatMap.role == 'user'}">
+        <div class="message user-msg">
+            <div class="card text-end">
+                <strong>You: </strong> ${chatMap.content}
+            </div>
+        </div>
+    </c:if>
+    <c:if test="${chatMap.role == 'model'}">
+        <div class="message bot-msg">
+            <div class="card">
+                <strong>Gemini: </strong> <p>${chatMap.content}</p>
+                <a href="${chatMap.downloadIcsUrl}" class="btn btn-outline-success btn-sm mt-2" download>📥 Download .ics File </a>
+            </div>
+        </div>
+    </c:if>
+    </c:forEach>
+    </div>
 
     <form id="chat-form" class="d-flex gap-2">
         <input type="text" id="question" class="form-control" placeholder="Ask something..." required>

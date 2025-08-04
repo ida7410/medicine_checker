@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Component;
 
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -33,7 +34,7 @@ public class CookieManager {
             return null;
         }
         // role:text, role:text, ...
-        String cookieString = URLDecoder.decode(cookie.getValue());
+        String cookieString = URLDecoder.decode(cookie.getValue(), StandardCharsets.UTF_8);
         List<String> cookieList = new ArrayList<>(Arrays.asList(cookieString.split(",")));
         return cookieList;
     }
