@@ -98,16 +98,17 @@ public class GeminiService {
     public void setChatList(
             HttpServletRequest request,
             HttpServletResponse response,
-            Map<String, String> chat
+            String question, String answer, String downloadIcsUrl
     ) {
 
         List<String> chatList = getChatList(request);
 
-        chatList.add(chat.get("role") + ":" + chat.get("content"));
+        chatList.add("user=" + question);
+        chatList.add("model=" + answer + ";" + downloadIcsUrl);
 
         Cookie c = new Cookie("chatList", URLEncoder.encode(String.join(",", chatList)
                 , StandardCharsets.UTF_8));
-        c.setMaxAge(60);
+        c.setMaxAge(100);
         c.setPath("/");
         response.addCookie(c);
     }

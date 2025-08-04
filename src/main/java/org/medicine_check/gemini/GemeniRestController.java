@@ -39,8 +39,7 @@ public class GemeniRestController {
             fileManageService.saveIcsFile(session.getId(), "title", icsStr);
             Map<String, Object> data = getStringObjectMap(session.getId(), geminiResponse);
 
-            geminiService.setChatList(request, response, Map.of("role", "user", "content", question));
-            geminiService.setChatList(request, response, Map.of("role", "model", "content", question));
+            geminiService.setChatList(request, response, question, getAnswerFromGeminiResponse(geminiResponse), (String) data.get("downloadIcsUrl"));
             return ResponseEntity.ok(data);
         }
         catch(Exception e) {
@@ -48,8 +47,8 @@ public class GemeniRestController {
         }
     }
 
-    private static Map<String, Object> getStringObjectMap(String sessionId, String geminiResponse) {
-        String answer = geminiResponse.substring(geminiResponse.indexOf("\"text\": \"") + 9, geminiResponse.indexOf("\\u003cics\\u003e")).replace("\\n", "<br>");
+    private Map<String, Object> getStringObjectMap(String sessionId, String geminiResponse) {
+        String answer = getAnswerFromGeminiResponse(geminiResponse);
         String downloadIcsUrl = "http://localhost:8008/download/" + sessionId + "/" + "title" + ".ics";
 
         Map<String, Object> response = new HashMap<>();
@@ -57,6 +56,11 @@ public class GemeniRestController {
         response.put("answer", answer);
         response.put("downloadIcsUrl", downloadIcsUrl); // let frontend call this URL for file
         return response;
+    }
+
+    public String getAnswerFromGeminiResponse(String geminiResponse) {
+        String answer = geminiResponse.substring(geminiResponse.indexOf("\"text\": \"") + 9, geminiResponse.indexOf("\\u003cics\\u003e")).replace("\\n", "<br>");
+        return answer;
     }
 
 }
